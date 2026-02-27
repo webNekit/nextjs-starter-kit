@@ -1,15 +1,21 @@
-export function hasFile(formData: FormData, key: string) {
-    const value = formData.get(key);
-    return value instanceof File && value.size > 0;
-  }
-  
-  export function appendIfExists(
-    formData: FormData,
-    key: string,
-    value?: string | Blob | null
-  ) {
-    if (value !== undefined && value !== null) {
+export function toFormData(data: Record<string, unknown>) {
+  const formData = new FormData();
+
+  Object.entries(data).forEach(([key, value]) => {
+    if (value === undefined || value === null) return;
+
+    if (value instanceof File || value instanceof Blob) {
       formData.append(key, value);
+      return;
     }
-  }
-  
+
+    if (Array.isArray(value)) {
+      value.forEach(v => formData.append(key, String(v)));
+      return;
+    }
+
+    formData.append(key, String(value));
+  });
+
+  return formData;
+}
