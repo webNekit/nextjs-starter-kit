@@ -1,6 +1,8 @@
 import { httpServer } from '@/shared/api/http-server';
 import { User, UserListResponse, UserQueryParams, UserRole } from './users.type';
 import { API_ROUTES } from '@/shared/routes/api-routes';
+import { CreateUserInput } from './users.schema';
+import { toFormData } from '@/shared/lib/form-data';
 
 export const usersService = {
     getMe() {
@@ -48,10 +50,10 @@ export const usersService = {
         });
     },
 
-    create(formData: FormData) {
+    create(data: CreateUserInput) {
         return httpServer<User>({
             method: "POST",
-            body: formData,
+            body: toFormData(data),
             endpoint: API_ROUTES.USERS.CREATE(),
         });
     },
