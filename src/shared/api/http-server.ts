@@ -11,6 +11,7 @@ interface RequestOptions {
     headers?: Record<string, string>;
     cache?: RequestCache;
     next?: NextFetchRequestConfig;
+    processSetCookie?: boolean;
 }
 
 export async function httpServer<T>({
@@ -20,6 +21,7 @@ export async function httpServer<T>({
     headers = {},
     cache = "no-store",
     next,
+    processSetCookie = false,
 }: RequestOptions): Promise<T> {
     const cookieStore = await cookies();
     const isFormData = body instanceof FormData;
@@ -37,20 +39,18 @@ export async function httpServer<T>({
         next,
     });
     
-    // Парсим заголовки Set-Cookie от NestJS
     const setCookieHeader = response.headers.getSetCookie();
 
-    if (setCookieHeader && setCookieHeader.length > 0) {
+    if (setCookieHeader && setCookieHeader.length > 0 && processSetCookie === true) {
         const parsedCookies = parse(setCookieHeader);
 
         parsedCookies.forEach((cookie) => {
             const domain = cookie.domain === 'localhost' ? undefined : cookie.domain;
-
             try {
                 cookieStore.set({
                     name: cookie.name,
                     value: cookie.value,
-                    domain: domain, 
+                    domain: domain,
                     path: cookie.path ?? "/",
                     secure: cookie.secure,
                     httpOnly: cookie.httpOnly,
@@ -58,7 +58,9 @@ export async function httpServer<T>({
                     maxAge: cookie.maxAge,
                     sameSite: cookie.sameSite as "lax" | "strict" | "none" | undefined,
                 });
-            } catch (error) {}
+            } catch (error) {
+                console.warn(`[httpServer] Could not set cookie ${cookie.name}. Ensure this is called from a Server Action or Route Handler.`);
+            }
         });
     }
 
