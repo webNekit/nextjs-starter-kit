@@ -59,7 +59,15 @@ async function refreshAuthToken(refreshToken: string) {
 }
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const { pathname, searchParams } = request.nextUrl;
+
+  // Очистка сессии при протухшем токене
+  if (pathname === '/login' && searchParams.get('error') === 'session_expired') {
+    const response = NextResponse.next();
+    response.cookies.delete(ACCESS_TOKEN);
+    response.cookies.delete(REFRESH_TOKEN);
+    return response;
+  }
   
   const refreshToken = request.cookies.get(REFRESH_TOKEN)?.value;
   let accessToken = request.cookies.get(ACCESS_TOKEN)?.value;
