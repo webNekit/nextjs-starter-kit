@@ -4,9 +4,8 @@ import { APP_ROUTES } from "@/shared/routes/app-routes";
 import { AppRole } from "./types";
 
 function handleAuthError() {
-    redirect("/api/auth/session-expired");
+    redirect("/login?error=session_expired");
 }
-
 export async function requireAuth() {
     const user = await getUserSession();
     if (!user) handleAuthError();
