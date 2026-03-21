@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "make": "node .cli/make.mjs",
+    "remove": "node .cli/remove.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
